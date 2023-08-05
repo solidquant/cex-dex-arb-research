@@ -3,6 +3,7 @@ import asyncio
 import requests
 import websockets
 import aioprocessing
+
 from typing import List
 from decimal import Decimal
 
@@ -31,7 +32,7 @@ async def stream_binance_usdm_orderbook(symbols: List[str],
                 'exchange': 'binance',
                 'symbol': data['s'],
                 'bids': [[Decimal(d[0]), Decimal(d[1])] for d in data['b']],
-                'asks': [[Decimal(d[0]), Decimal(d[1])] for d in data['a']]
+                'asks': [[Decimal(d[0]), Decimal(d[1])] for d in data['a']],
             }
             if not debug:
                 event_queue.put(orderbook)
