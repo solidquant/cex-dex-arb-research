@@ -106,12 +106,17 @@ class ChartWindow(QMainWindow):
         
 # Sample publisher function for test
 def send_data(port: int):
-    pub = Publisher(port)
-    i = 0
-    while True:
-        pub.send({'spread': i})
-        i += 1
-        time.sleep(0.5)    
+    import asyncio
+    
+    async def _send():
+        pub = Publisher(port)
+        i = 0
+        while True:
+            await pub.send({'spread': i})
+            i += 1
+            time.sleep(0.5)
+            
+    asyncio.run(_send())
 
 
 if __name__ == "__main__":
