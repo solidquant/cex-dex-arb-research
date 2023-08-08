@@ -61,6 +61,7 @@ async def stream_uniswap_v2_events(http_rpc_url: str,
     
     w3 = Web3(Web3.HTTPProvider(http_rpc_url))
     
+    block_number = w3.eth.get_block_number()
     signature = 'getReserves()((uint112,uint112,uint32))'  # reserve0, reserve1, blockTimestampLast
     
     calls = []
@@ -86,6 +87,60 @@ async def stream_uniswap_v2_events(http_rpc_url: str,
     
     filtered_pools = [pool for pool in pools if pool['version'] == 2]
     pools = {pool['address'].lower(): pool for pool in filtered_pools}
+    
+    def _publish(block_number: int,
+                 pool: Dict[str, Any],
+                 data: List[int] = []):
+        
+        exchange = pool['exchange']
+        version = pool['version']
+        symbol = f'{pool["token0"]}{pool["token1"]}'
+
+        # save to "reserves" in memory
+        symbol_key = f'{exchange}_{version}_{symbol}'
+        
+        if len(data) == 2:
+            # initial publishing occurs without data(=Sync event data)
+            reserves[symbol_key][0] = data[0]
+            reserves[symbol_key][1] = data[1]
+            
+        token_idx = {
+            pool['token0']: 0,
+            pool['token1']: 1,
+        }
+        
+        decimals = {
+            pool['token0']: tokens[pool['token0']][1],
+            pool['token1']: tokens[pool['token1']][1],
+        }
+        
+        reserve_update = {
+            pool['token0']: reserves[symbol_key][0],
+            pool['token1']: reserves[symbol_key][1],
+        }
+        
+        pool_update = {
+            'source': 'dex',
+            'type': 'pool_update',
+            'block_number': block_number,
+            'exchange': pool['exchange'],
+            'version': pool['version'],
+            'symbol': symbol,
+            'token_idx': token_idx,
+            'decimals': decimals,
+            'reserves': reserve_update,
+        }
+        
+        if not debug:
+            event_queue.put(pool_update)
+        else:
+            print(pool_update)
+            
+    """
+    Send initial reserve data so that price can be calculated even if the pool is idle
+    """
+    for address, pool in pools.items():
+        _publish(block_number, pool)
 
     sync_event_selector = w3.keccak(text='Sync(uint112,uint112)').hex()
     
@@ -115,42 +170,8 @@ async def stream_uniswap_v2_events(http_rpc_url: str,
                     ['uint112', 'uint112'],
                     eth_utils.decode_hex(event['data'])
                 )
+                _publish(block_number, pool, data)
                 
-                exchange = pool['exchange']
-                version = pool['version']
-                symbol = f'{pool["token0"]}{pool["token1"]}'
-
-                # save to "reserves" in memory
-                symbol_key = f'{exchange}_{version}_{symbol}'
-                reserves[symbol_key][0] = data[0]
-                reserves[symbol_key][1] = data[1]
-                
-                decimals = {
-                    pool['token0']: tokens[pool['token0']][1],
-                    pool['token1']: tokens[pool['token1']][1],
-                }
-                
-                reserve_update = {
-                    pool['token0']: reserves[symbol_key][0],
-                    pool['token1']: reserves[symbol_key][1],
-                }
-                
-                pool_update = {
-                    'source': 'dex',
-                    'type': 'pool_update',
-                    'block_number': block_number,
-                    'exchange': pool['exchange'],
-                    'version': pool['version'],
-                    'symbol': symbol,
-                    'decimals': decimals,
-                    'reserves': reserve_update,
-                }
-                
-                if not debug:
-                    event_queue.put(pool_update)
-                else:
-                    print(pool_update)
-    
 
 if __name__ == '__main__':
     import os

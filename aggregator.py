@@ -22,10 +22,6 @@ def aggregate_cex_orderbooks(orderbooks: Dict[str, Dict[str, Any]]) -> Dict[str,
     asks = sorted(asks, key=itemgetter(0))
     
     return {'bids': bids, 'asks': asks}
-
-
-def aggregate_dex_updates():
-    pass
     
 
 async def event_handler(event_queue: aioprocessing.AioQueue):
