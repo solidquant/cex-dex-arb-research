@@ -1,8 +1,3 @@
-**************
-Needs Curve.fi correct pools. Not sure which is correct as I am unfamiliar with Curve. 
-A good place to start: https://curve.readthedocs.io/ref-addresses.html
-******************
-
 from web3 import Web3
 
 # Connect to your local Ethereum node
@@ -41,8 +36,8 @@ def main():
     v2_pair_address = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
     v3_pool_address = "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
     
-    # Placeholder for Curve pool address and token indices
-    curve_pool_address = "0x...yourCurvePoolAddressForWETH_USDC..."
+    # Curve Finance pool address for WETH/USDC
+    curve_pool_address = "0x99a58482BD75cbab83b27EC03CA68fF489b5788f"
     weth_idx = ...  # Placeholder for WETH index in the Curve pool
     usdc_idx = ...  # Placeholder for USDC index in the Curve pool
 
