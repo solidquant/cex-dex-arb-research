@@ -45,15 +45,15 @@ async def stream_1inch_limit_orderbook_events(http_rpc_url: str,
                 block_number = int(event['blockNumber'], base=16)
                 topic = event['topics'][0]
                 event_type = 'order_cancel' if topic == order_canceled_event_selector else 'order_filled'
-                maker = eth_abi.decode(['address'], [event['topics'][1]])
-                data = eth_abi.decode(['byte32', 'uin256'], eth_utils.decode_hex(event['data']))
+                maker = eth_abi.decode(['address'], eth_utils.decode_hex(event['topics'][1]))[0]
+                data = eth_abi.decode(['bytes32', 'uint256'], eth_utils.decode_hex(event['data']))
                 order_update = {
                     'source': 'dex',
                     'type': event_type,
                     'block_number': block_number,
                     'exchange': address,
                     'maker': maker,
-                    'order_hash': data[0],
+                    'order_hash': data[0].hex(),
                     'remaining': data[1],
                 }
                 
@@ -79,8 +79,8 @@ if __name__ == '__main__':
     WS_RPC_URL = os.getenv('WS_RPC_URL')
     
     inch_stream = reconnecting_websocket_loop(
-        partial(stream_1inch_limit_orderbook_events, HTTP_RPC_URL, WS_RPC_URL, None, True),
-        tag='uniswap_v2_stream'
+        partial(stream_1inch_limit_orderbook_events, HTTP_RPC_URL, WS_RPC_URL, ['0x1111111254eeb25477b68fb85ed929f73a960582'], None, True),
+        tag='inch_stream'
     )
 
     loop = asyncio.get_event_loop()
