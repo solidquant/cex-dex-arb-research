@@ -67,6 +67,9 @@ def get_1inch_limit_orderbook(symbol: str,
                               tokens: Dict[str, str],
                               decimals: Dict[str, int],
                               depth: int = 20):
+    """
+    Creates an orderbook of bids/asks using the 1inch limit orderbook API
+    """
     symbols = symbol.split('/')
     token0 = tokens[symbols[0]]
     token1 = tokens[symbols[1]]
@@ -145,5 +148,5 @@ if __name__ == '__main__':
         'USDT': 6,
     }
     
-    orderbook = get_1inch_limit_orderbook('ETH/USDT', tokens, decimals, 100)
+    orderbook = get_1inch_limit_orderbook('ETH/USDT', tokens, decimals, 20)
     print(orderbook)
