@@ -126,4 +126,4 @@ Doing this will result in the below:
 
 ⚡️ If anyone is interested in developing this MEV research template together, or in searching for opportunities together, please join the Discord community! 🌎🪐
 
-https://discord.gg/jjTa8vkP
+https://discord.com/invite/e6KpjTQP98
